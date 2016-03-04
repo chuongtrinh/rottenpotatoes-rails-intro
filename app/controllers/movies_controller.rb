@@ -1,5 +1,9 @@
 class MoviesController < ApplicationController
 
+  def initialize
+    @all_ratings = Movie.all_ratings
+    super
+  end
   def movie_params
     params.require(:movie).permit(:title, :rating, :description, :release_date)
   end
@@ -13,7 +17,21 @@ class MoviesController < ApplicationController
   def index
     @movies = Movie.all
     @movies = Movie.order params[:sorting]
+    @all_ratings = Movie.all_ratings
     
+    if params[:ratings]
+      @select_ratings = params[:ratings]
+      session[:select_ratings] = @select_ratings# retrieve ratings selected from html
+    else
+      session[:select_ratings] = @all_ratings 
+    end
+    
+    if session[:select_ratings]
+      @movies = @movies.select{ |movie| session[:select_ratings].include? movie.rating }
+    end
+     
+     
+            
   end
 
   def new
