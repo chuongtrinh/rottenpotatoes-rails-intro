@@ -16,15 +16,34 @@ class MoviesController < ApplicationController
 
   def index
     @movies = Movie.all
-    @movies = Movie.order params[:sorting]
+    
     @all_ratings = Movie.all_ratings
     
+    # retrieve ratings selected from html
     if params[:ratings]
       @select_ratings = params[:ratings]
-      session[:select_ratings] = @select_ratings# retrieve ratings selected from html
+      session[:select_ratings] = @select_ratings
     else
       session[:select_ratings] = @all_ratings 
     end
+    
+    if params[:sorting]
+      session[:sorting] = params[:sorting] 
+    end
+    
+    if session[:sorting] == "title"
+      @movies = Movie.order "title"
+      @title_header = "hilite"
+    elsif session[:sorting] == "release_date"
+      @movies = Movie.order "release_date"
+      @release_date_header = "hilite"
+    end
+    if params[:sorting].nil? && params[:ratings].nil? && session[:select_ratings]
+      flash.keep
+      redirect_to movies_path({order_by: session[:sorting], ratings: session[:select_ratings]})
+    end   
+    
+   
     
     if session[:select_ratings]
       @movies = @movies.select{ |movie| session[:select_ratings].include? movie.rating }
